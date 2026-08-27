@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int    @id @default(autoincrement())
+  email        String @unique
+  passwordHash String
+}
+
+model Product {
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  assemblyLines AssemblyLine[]
+}
+
+model AssemblyLine {
+  id          Int          @id @default(autoincrement())
+  name        String
+  active      Boolean      @default(true)
+  productId   Int
+  product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  allocations Allocation[]
+}
+
+model Workstation {
+  id          Int          @id @default(autoincrement())
+  shortName   String
+  name        String
+  pcName      String
+  allocations Allocation[]
+}
+
+model Allocation {
+  id             Int          @id @default(autoincrement())
+  assemblyLineId Int
+  workstationId  Int
+  order          Int
+  assemblyLine   AssemblyLine @relation(fields: [assemblyLineId], references: [id], onDelete: Cascade)
+  workstation    Workstation  @relation(fields: [workstationId], references: [id], onDelete: Cascade)
+
+  @@unique([assemblyLineId, workstationId])
+}
